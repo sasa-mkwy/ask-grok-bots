@@ -106,9 +106,11 @@ On first use, a page asks for the passphrase from step 4.
 | Claude Code | `claude mcp add --transport http ask-grok-bots <MCP URL>`, then authenticate from `/mcp` (logs in through `localhost`: no setting needed) |
 | Codex CLI | `codex mcp add ask-grok-bots --url <MCP URL>`, then `codex mcp login ask-grok-bots` (logs in through `localhost`: no setting needed) |
 | Antigravity | Add `"ask-grok-bots": { "url": "<MCP URL>" }` to its MCP config and authenticate. Add `antigravity.google` to `ALLOWED_REDIRECT_HOSTS` first |
-| Others (Cursor, Muse, ...) | Add a remote (streamable HTTP) MCP server with the MCP URL. If the login page says the redirect target is not allowed, add the client's callback host to `ALLOWED_REDIRECT_HOSTS` (see Configuration: setting it replaces the default list) |
+| Muse (Meta AI agents) | Add a custom connector with the MCP URL. Set `ALLOWED_REDIRECT_HOSTS` to `claude.ai,claude.com,agent.meta.ai` first (see the note below) |
+| Cursor | Cursor's own OAuth returns to `cursor://...`, which this server does not accept. Use `mcp-remote` instead (it logs in through `localhost`): `"ask-grok-bots": { "command": "npx", "args": ["-y", "mcp-remote", "<MCP URL>"] }` (not tested yet) |
+| Others | Add a remote (streamable HTTP) MCP server with the MCP URL. If the login page says the redirect target is not allowed, add the client's callback host to `ALLOWED_REDIRECT_HOSTS` (setting it replaces the default list). If the client uses a custom scheme such as `myapp://`, use `mcp-remote` as for Cursor |
 
-**Which apps need `ALLOWED_REDIRECT_HOSTS`?** Only apps whose login returns to a web address: Claude (`claude.ai`, in the default list), Muse (`agent.meta.ai`), Antigravity (`antigravity.google`) and the like. Apps on your own computer that return to `localhost` / `127.0.0.1` (Claude Code, Codex CLI, `mcp-remote`...) are allowed by default (`ALLOW_LOOPBACK_REDIRECTS`), and still need the passphrase.
+**Which apps need `ALLOWED_REDIRECT_HOSTS`?** Only apps whose login returns to a web address: Claude (`claude.ai`, in the default list), Muse (`agent.meta.ai`), Antigravity (`antigravity.google`) and the like. Apps on your own computer that return to `localhost` / `127.0.0.1` (Claude Code, Codex CLI, `mcp-remote` for Cursor...) are allowed by default (`ALLOW_LOOPBACK_REDIRECTS`), and still need the passphrase.
 
 **Muse (Meta AI agents)**: set `ALLOWED_REDIRECT_HOSTS` to `claude.ai,claude.com,agent.meta.ai` (the callback is `https://agent.meta.ai/api/hatch/oauth/callback`). The passphrase page closed by itself in Muse's in-app browser; open it in an external browser. On Android, use your keyboard's clipboard history if you need to paste more than one value.
 
