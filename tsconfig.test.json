@@ -1,0 +1,6 @@
+{
+  // Type-checks the tests too (they run on Node, so Node's types are added here only).
+  "extends": "./tsconfig.json",
+  "compilerOptions": { "types": ["@cloudflare/workers-types", "node"] },
+  "include": ["src", "test/**/*.ts"]
+}

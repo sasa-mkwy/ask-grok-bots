@@ -1,0 +1,28 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "ask-grok-bots",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-25",
+  // Needed to fetch Client ID Metadata Documents safely.
+  "compatibility_flags": ["global_fetch_strictly_public"],
+  // Public: AI clients connect here and the Grok Bot posts replies here.
+  "workers_dev": true,
+  "preview_urls": false,
+  // Optional settings (PUBLIC_URL, ALLOWED_REDIRECT_HOSTS, ALLOW_LOOPBACK_REDIRECTS, WEBHOOK_EVENT_TYPE)
+  // can be "vars" here or secrets, but never both with the same name.
+  // Defaults are in src/config.ts and the README.
+  "kv_namespaces": [
+    // Replace with the id from: npx wrangler kv namespace create OAUTH_KV
+    { "binding": "OAUTH_KV", "id": "REPLACE_WITH_OAUTH_KV_ID" }
+  ],
+  "d1_databases": [
+    // Replace with the database_id from: npx wrangler d1 create ask-grok-bots
+    { "binding": "DB", "database_name": "ask-grok-bots", "database_id": "REPLACE_WITH_D1_ID", "migrations_dir": "migrations" }
+  ],
+  // Daily at 18:17 UTC: delete consultations older than 30 days.
+  // Every 10 minutes: resend consultations without a reply when due (20, 40, 80 minutes apart; max 3). Must match RESEND_CRON in src/resend.ts.
+  "triggers": { "crons": ["17 18 * * *", "*/10 * * * *"] },
+  "observability": { "enabled": true }
+  // Secrets (npx wrangler secret put <NAME>):
+  //   LOGIN_PASSPHRASE, GROK_WEBHOOK_URL, GROK_WEBHOOK_KEY, REPLY_SIGNING_SECRET
+}

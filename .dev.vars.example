@@ -1,0 +1,7 @@
+# Local development only (npm run dev / npm run test:e2e). Never use these values in production.
+PUBLIC_URL=http://127.0.0.1:8787
+ALLOWED_REDIRECT_HOSTS=claude.ai,claude.com
+LOGIN_PASSPHRASE=test-passphrase-0123456789
+GROK_WEBHOOK_URL=http://127.0.0.1:9999/webhook
+GROK_WEBHOOK_KEY=test-webhook-key
+REPLY_SIGNING_SECRET=test-signing-secret-0123456789abcdef
