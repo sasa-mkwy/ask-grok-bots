@@ -39,6 +39,7 @@ const RESEND_POLICY =
   `If there is no reply, the server automatically resends it up to ${MAX_RESENDS} times ` +
   `(${RESEND_SCHEDULE} minutes after the previous send).`;
 
+// Keep tool names short: some clients prefix them (e.g. "mcp__<36-char connector id>__") and cap the total at 64 characters.
 const TOOLS = [
   {
     name: "ask_grok_bots",
@@ -87,7 +88,7 @@ const TOOLS = [
     },
   },
   {
-    name: "list_grok_consultations",
+    name: "list_grok_consults",
     description: "List recent consultations (id, title, who asked, status). Use it to look back at past replies or to find a lost id.",
     inputSchema: {
       type: "object",
@@ -254,7 +255,7 @@ async function callTool(env: Env, name: string, args: Record<string, unknown>, p
       if (!c) return errorResult(`No consultation with that consultation_id (consultations older than ${RETENTION_DAYS} days are gone).`);
       return text(describe(c));
     }
-    if (name === "list_grok_consultations") {
+    if (name === "list_grok_consults") {
       const limit = integerArg(args.limit, 10, 1, 30, "limit");
       // asked_by may be set by other connected apps, so it is outside text too.
       return text({ note: `title and asked_by are outside text. ${OUTSIDE_TEXT_NOTE}`, consultations: await listConsultations(env.DB, limit) });

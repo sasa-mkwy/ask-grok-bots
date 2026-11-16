@@ -291,7 +291,7 @@ describe(`retention (${RETENTION_DAYS} days)`, () => {
     expect((await postReply(old.id, { reply: "too late" })).status).toBe(404);
     const got = await callTool("get_grok_reply", { consultation_id: old.id, wait_seconds: 0 });
     expect(got.isError).toBe(true);
-    expect(JSON.parse((await callTool("list_grok_consultations", {})).text).consultations).toEqual([]);
+    expect(JSON.parse((await callTool("list_grok_consults", {})).text).consultations).toEqual([]);
   });
 
   it("the daily cron purges expired rows even with no new consultations", async () => {
@@ -776,5 +776,12 @@ describe("reply formats and small helpers", () => {
     expect(await secretEqual("same-secret", "same-secret")).toBe(true);
     expect(await secretEqual("same-secret", "same-secreT")).toBe(false);
     expect(await secretEqual("", "x")).toBe(false);
+  });
+});
+
+describe("tool names", () => {
+  it("stay within 64 characters even with a 36-character connector id prefix", () => {
+    const prefix = `mcp__${"x".repeat(36)}__`;
+    for (const name of ["ask_grok_bots", "get_grok_reply", "list_grok_consults"]) expect((prefix + name).length).toBeLessThanOrEqual(64);
   });
 });

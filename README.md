@@ -23,7 +23,7 @@ ask-grok-bots ──▶ your AI reads it with get_grok_reply
 
 ## Features
 
-- **Three tools**: `ask_grok_bots` (send), `get_grok_reply` (wait up to 50 s and read), `list_grok_consultations` (recent list).
+- **Three tools**: `ask_grok_bots` (send), `get_grok_reply` (wait up to 50 s and read), `list_grok_consults` (recent list).
 - **Works with any MCP client** that supports remote HTTP servers with OAuth (dynamic client registration or Client ID Metadata Documents). Local apps that log in through `localhost` are supported.
 - **Tells the bots who is asking**: the `from` argument, or the connected app's name.
 - **Survives a sleeping bot**: if no reply arrives, the consultation is resent up to 3 times (20, 40 and 80 minutes apart), with the same id and token.

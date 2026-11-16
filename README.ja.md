@@ -23,7 +23,7 @@ ask-grok-bots ──▶ AIが get_grok_reply で受け取る
 
 ## できること
 
-- **ツールは3つ**：`ask_grok_bots`（送る）、`get_grok_reply`（最大50秒待って読む）、`list_grok_consultations`（最近の一覧）。
+- **ツールは3つ**：`ask_grok_bots`（送る）、`get_grok_reply`（最大50秒待って読む）、`list_grok_consults`（最近の一覧）。
 - **MCPクライアントなら何でも使えます**。OAuth付きのリモートHTTPサーバーに対応していれば大丈夫です（動的クライアント登録か、Client ID Metadata Document）。`localhost` でログインするPC上のアプリにも対応しています。
 - **誰からの相談かをBotに伝えます**：`from` 引数か、接続したアプリの名前を使います。
 - **Botが寝ていても取りこぼしません**：回答がなければ、同じ相談ID・同じトークンのまま最大3回（20分・40分・80分の間隔）送り直します。

@@ -147,7 +147,7 @@ try {
   const init = await rpc("initialize", { protocolVersion: "2025-06-18", capabilities: {}, clientInfo: { name: "e2e" } });
   assert.equal(init.serverInfo.name, "ask-grok-bots");
   const tools = (await rpc("tools/list")).tools.map((t) => t.name);
-  assert.deepEqual(tools, ["ask_grok_bots", "get_grok_reply", "list_grok_consultations"]);
+  assert.deepEqual(tools, ["ask_grok_bots", "get_grok_reply", "list_grok_consults"]);
 
   const asked = await rpc("tools/call", {
     name: "ask_grok_bots",
@@ -206,7 +206,7 @@ try {
   assert.match(rejected.content[0].text, /"delivery": "rejected"/);
   assert.ok(JSON.parse(rejected.content[0].text).consultation_id);
 
-  const list = await rpc("tools/call", { name: "list_grok_consultations", arguments: { limit: 10 } });
+  const list = await rpc("tools/call", { name: "list_grok_consults", arguments: { limit: 10 } });
   // Only check the consultations made by this run, so the script can run again on the same local D1.
   const listed = JSON.parse(list.content[0].text).consultations.map((c) => c.id);
   for (const mine of [consultation_id, pid, slowResult.consultation_id, JSON.parse(rejected.content[0].text).consultation_id]) {
