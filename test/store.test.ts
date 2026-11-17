@@ -557,7 +557,7 @@ describe("hardening from the pre-release reviews", () => {
     const e = { ...env, OAUTH_PROVIDER: oauth, ALLOWED_REDIRECT_HOSTS: "claude.ai" } as unknown as Env;
     const res = await handleAuthorize(new Request("https://x/authorize?x=1"), e);
     expect(res.status).toBe(200);
-    expect(res.headers.get("Content-Security-Policy")).toContain("form-action 'self' http://127.0.0.1:8765;");
+    expect(res.headers.get("Content-Security-Policy")).toContain("form-action 'self' https: http://127.0.0.1:8765;");
     expect(res.headers.get("Cache-Control")).toBe("no-store");
     expect(res.headers.get("X-Content-Type-Options")).toBe("nosniff");
   });

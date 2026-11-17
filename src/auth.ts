@@ -18,7 +18,7 @@ const escape = (value: string) => value.replace(/[&<>"']/g, (char) => `&#${char.
 const page = (lang: Lang, title: string, body: string, status = 200, headers = new Headers(), formActionExtra = "") => {
   headers.set("Content-Type", "text/html; charset=utf-8");
   // form-action also applies to the redirect after the form POST (Chromium, WebKit), so the consent page
-  // adds exactly the redirect target's origin; every other page allows posting to itself only.
+  // adds the redirect targets (see redirectFormAction); every other page allows posting to itself only.
   headers.set(
     "Content-Security-Policy",
     `default-src 'none'; style-src 'unsafe-inline'; form-action 'self'${formActionExtra ? ` ${formActionExtra}` : ""}; frame-ancestors 'none'`,
@@ -71,11 +71,17 @@ ${loopbackWarning}
   );
 }
 
-/** The CSP source for the redirect target (e.g. https://claude.ai or http://127.0.0.1:8765), or "" if it has no web origin. */
+/**
+ * The CSP form-action sources for the redirect after the form POST, or "" if it has no web origin.
+ * Browsers also check every further hop of that redirect, and some clients bounce through their own
+ * redirector first (Gemini: oauth-redirect.googleusercontent.com, then gemini.google.com), so any
+ * https target is allowed; an http (loopback) target adds its exact origin.
+ */
 function redirectFormAction(redirectUri: string): string {
   try {
     const url = new URL(redirectUri);
-    return url.protocol === "https:" || url.protocol === "http:" ? url.origin : "";
+    if (url.protocol === "https:") return "https:";
+    return url.protocol === "http:" ? `https: ${url.origin}` : "";
   } catch {
     return "";
   }
