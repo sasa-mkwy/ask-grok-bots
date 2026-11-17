@@ -184,7 +184,7 @@ Responses: `200 {"ok":true}`, `400` empty reply or invalid JSON, `401` bad token
 
 ## Security notes
 
-**How it was reviewed.** Before release, the code was reviewed for security by AI models from five companies (Anthropic Claude, OpenAI Codex, Google Gemini, xAI Grok and Meta's Muse), in several rounds. Every finding was checked against the code before fixing, and the fixes have tests that run in CI. Reviews lower the risk but cannot prove there are no bugs: for example, a login problem that only happens with Gemini was found after release by real use, and fixed. Please report problems as described in [SECURITY.md](SECURITY.md).
+**How it was reviewed.** Before release, the code was reviewed for security by AI models from five companies (Claude Fable 5.2, GPT-6 Astra, Gemini 4 Carbon, Grok 4.7 and Muse Wonder), in several rounds. Every finding was checked against the code before fixing, and the fixes have tests that run in CI. Reviews lower the risk but cannot prove there are no bugs: for example, a login problem that only happens with Gemini was found after release by real use, and fixed. Please report problems as described in [SECURITY.md](SECURITY.md).
 
 **What protects you:**
 
