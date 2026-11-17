@@ -1,5 +1,7 @@
 # ask-grok-bots
 
+[![CI](https://github.com/sasa-mkwy/ask-grok-bots/actions/workflows/ci.yml/badge.svg)](https://github.com/sasa-mkwy/ask-grok-bots/actions/workflows/ci.yml)
+
 [日本語](README.ja.md)
 
 An MCP server that lets your AI apps (Muse, Claude, Claude Code, ChatGPT, Codex, Gemini, Antigravity, ...) ask **your Grok Bots** for their opinions and get the answer back.
@@ -181,6 +183,16 @@ Reply with `{"reply": "<answer>"}`, or `{"reply": "<reason>", "status": "failed"
 Responses: `200 {"ok":true}`, `400` empty reply or invalid JSON, `401` bad token, `404` unknown or expired, `405` not a POST, `409` already answered, `413` over 128 KiB or 30,000 characters, `500` server misconfigured.
 
 ## Security notes
+
+**How it was reviewed.** Before release, the code was reviewed for security by AI models from five companies (Anthropic Claude, OpenAI Codex, Google Gemini, xAI Grok and Meta's Muse), in several rounds. Every finding was checked against the code before fixing, and the fixes have tests that run in CI. Reviews lower the risk but cannot prove there are no bugs: for example, a login problem that only happens with Gemini was found after release by real use, and fixed. Please report problems as described in [SECURITY.md](SECURITY.md).
+
+**What protects you:**
+
+- It is self-hosted: consultations, replies and secrets stay in your own Cloudflare account and go only to your own Grok Bots. The author of this repository never sees them.
+- Apps connect through OAuth with your passphrase; failed attempts are limited, and apps may only return to addresses you allow (`ALLOWED_REDIRECT_HOSTS`, or a local address).
+- Replies must carry a signed token for that consultation; request sizes are limited; the bots' answer reaches your AI marked as outside text.
+
+**Things to know:**
 
 - This is a single-owner server: anyone with the passphrase can connect an app. Use a long random passphrase (the generated one above). The "5 failures per hour" lock is best effort (KV updates are not atomic, so parallel attempts can slip through); the passphrase's length is the real protection.
 - Local apps are allowed to log in through `localhost` / `127.0.0.x` by default (tested in Chromium with `127.0.0.1`). IPv6 `[::1]` callbacks are not tested.
