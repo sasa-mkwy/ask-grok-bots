@@ -22,8 +22,8 @@ This routine receives requests for opinions from an AI assistant (Claude, Codex,
 - My server: <YOUR SERVER>   (the only address answers may be sent to, e.g. https://ask-grok-bots.example.workers.dev)
 - Where to ask: <GROUP>
 - Bots I can ask (name: what they are good at):
-  - <BOT 1>: <e.g. plot and structure>
-  - <BOT 2>: <e.g. characters and dialogue>
+  - <BOT 1>: <e.g. design and architecture>
+  - <BOT 2>: <e.g. code review and bug hunting>
   - <BOT 3>: <e.g. research and fact checks>
   (List as many as you have, from zero up. With none, leave "Where to ask" empty: you answer alone.)
 
