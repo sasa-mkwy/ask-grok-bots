@@ -2,7 +2,7 @@
 
 [日本語](README.ja.md)
 
-An MCP server that lets your AI apps (Claude, Claude Code, Codex CLI, Muse, Antigravity, ...) ask **your Grok Bots** for their opinions and get the answer back.
+An MCP server that lets your AI apps (Claude, Claude Code, Codex, Muse, Antigravity, ...) ask **your Grok Bots** for their opinions and get the answer back.
 
 It runs on Cloudflare Workers. Your AI sends a question with an MCP tool, ask-grok-bots wakes a Grok Bot routine through its webhook, the bots discuss in their group, and they POST their answer back. Your AI picks it up with another tool call.
 

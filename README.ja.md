@@ -2,7 +2,7 @@
 
 [English](README.md)
 
-MCPに対応したAIアプリ（Claude、Claude Code、Codex CLI、Muse、Antigravityなど）から、**自分のGrok Botたち**に意見を聞いて、答えを受け取れるようにするMCPサーバーです。
+MCPに対応したAIアプリ（Claude、Claude Code、Codex、Muse、Antigravityなど）から、**自分のGrok Botたち**に意見を聞いて、答えを受け取れるようにするMCPサーバーです。
 
 Cloudflare Workersで動きます。AIがMCPのツールで質問を送ると、ask-grok-botsがWebhookでGrok Botのルーティンを起こします。Botたちはグループで話し合い、まとめた答えを送り返します。AIは別のツールでそれを受け取ります。
 
