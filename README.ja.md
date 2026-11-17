@@ -2,7 +2,7 @@
 
 [English](README.md)
 
-MCPに対応したAIアプリ（Claude、Claude Code、Codex、Muse、Antigravityなど）から、**自分のGrok Botたち**に意見を聞いて、答えを受け取れるようにするMCPサーバーです。
+MCPに対応したAIアプリ（Claude、Claude Code、Codex、ChatGPT、Muse、Antigravityなど）から、**自分のGrok Botたち**に意見を聞いて、答えを受け取れるようにするMCPサーバーです。
 
 Cloudflare Workersで動きます。AIがMCPのツールで質問を送ると、ask-grok-botsがWebhookでGrok Botのルーティンを起こします。Botたちはグループで話し合い、まとめた答えを送り返します。AIは別のツールでそれを受け取ります。
 
@@ -105,12 +105,13 @@ MCPのURLは `https://ask-grok-bots.<あなたのサブドメイン>.workers.dev
 | Claude（claude.ai・デスクトップ・スマホ） | 設定 → コネクタ → カスタムコネクタを追加 → MCPのURLを貼る → 接続 |
 | Claude Code | `claude mcp add --transport http ask-grok-bots <MCPのURL>` のあと、`/mcp` から認証（`localhost` に戻るので設定は不要） |
 | Codex（アプリ・CLI） | アプリでは、Codexに「このMCPサーバーを入れて」とMCPのURLを渡して頼み、出てきた画面で認証する。CLIでは `codex mcp add ask-grok-bots --url <MCPのURL>` のあと、`codex mcp login ask-grok-bots`（どちらも `localhost` に戻るので設定は不要） |
+| ChatGPT | プラグイン画面 →「＋」→「カスタムMCPサーバーを追加」でMCPのURLを登録し、認証。チャットでは `@` から選ぶ。先に `ALLOWED_REDIRECT_HOSTS` へ `chatgpt.com` を足す |
 | Antigravity | MCPの設定に `"ask-grok-bots": { "url": "<MCPのURL>" }` を足して認証。先に `ALLOWED_REDIRECT_HOSTS` へ `antigravity.google` を足す |
 | Muse（Meta AIのエージェント） | カスタムコネクタとしてMCPのURLを追加。先に `ALLOWED_REDIRECT_HOSTS` を `claude.ai,claude.com,agent.meta.ai` にしておく（下の注意も参照） |
 | Cursor | Cursor自身のOAuthは `cursor://...` に戻るので、このサーバーでは使えない。代わりに `mcp-remote` を使う（`localhost` に戻る）: `"ask-grok-bots": { "command": "npx", "args": ["-y", "mcp-remote", "<MCPのURL>"] }`（未検証） |
 | そのほか | リモート（Streamable HTTP）のMCPサーバーとしてURLを登録。ログイン画面で「戻り先を許可していない」と出たら、そのアプリの戻り先ホストを `ALLOWED_REDIRECT_HOSTS` に足す（設定すると既定値が置き換わる）。`myapp://` のような独自スキームに戻るアプリは、Cursorと同じく `mcp-remote` を使う |
 
-**`ALLOWED_REDIRECT_HOSTS` が必要なアプリは？** ログイン後にWebのアドレスへ戻るアプリだけです。Claude（`claude.ai`、既定で許可済み）、Muse（`agent.meta.ai`）、Antigravity（`antigravity.google`）などです。PC上で動いて `localhost` / `127.0.0.1` に戻るアプリ（Claude Code、Codex、Cursor用の `mcp-remote` など）は、最初から許可されています（`ALLOW_LOOPBACK_REDIRECTS`）。どちらも合言葉は必要です。
+**`ALLOWED_REDIRECT_HOSTS` が必要なアプリは？** ログイン後にWebのアドレスへ戻るアプリだけです。Claude（`claude.ai`、既定で許可済み）、ChatGPT（`chatgpt.com`）、Muse（`agent.meta.ai`）、Antigravity（`antigravity.google`）などです。PC上で動いて `localhost` / `127.0.0.1` に戻るアプリ（Claude Code、Codex、Cursor用の `mcp-remote` など）は、最初から許可されています（`ALLOW_LOOPBACK_REDIRECTS`）。どちらも合言葉は必要です。
 
 **Muse（Meta AIのエージェント）の場合**：`ALLOWED_REDIRECT_HOSTS` を `claude.ai,claude.com,agent.meta.ai` にしてください（戻り先は `https://agent.meta.ai/api/hatch/oauth/callback`）。合言葉の画面は、Museのアプリ内ブラウザだと勝手に閉じてしまったので、外部ブラウザで開いてください。Androidで2つ以上の値を貼るときは、キーボードのクリップボード履歴を使うと楽です。
 

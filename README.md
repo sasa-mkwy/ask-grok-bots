@@ -2,7 +2,7 @@
 
 [日本語](README.ja.md)
 
-An MCP server that lets your AI apps (Claude, Claude Code, Codex, Muse, Antigravity, ...) ask **your Grok Bots** for their opinions and get the answer back.
+An MCP server that lets your AI apps (Claude, Claude Code, Codex, ChatGPT, Muse, Antigravity, ...) ask **your Grok Bots** for their opinions and get the answer back.
 
 It runs on Cloudflare Workers. Your AI sends a question with an MCP tool, ask-grok-bots wakes a Grok Bot routine through its webhook, the bots discuss in their group, and they POST their answer back. Your AI picks it up with another tool call.
 
@@ -105,12 +105,13 @@ On first use, a page asks for the passphrase from step 4.
 | Claude (claude.ai, desktop, mobile) | Settings → Connectors → Add custom connector → paste the MCP URL → Connect |
 | Claude Code | `claude mcp add --transport http ask-grok-bots <MCP URL>`, then authenticate from `/mcp` (logs in through `localhost`: no setting needed) |
 | Codex (app, CLI) | In the app, ask Codex to add this MCP server and give it the MCP URL, then authenticate on the page that opens. In the CLI, `codex mcp add ask-grok-bots --url <MCP URL>`, then `codex mcp login ask-grok-bots` (both log in through `localhost`: no setting needed) |
+| ChatGPT | Plugins page → "+" → "Add custom MCP server", enter the MCP URL and authenticate; pick it with `@` in a chat. Add `chatgpt.com` to `ALLOWED_REDIRECT_HOSTS` first |
 | Antigravity | Add `"ask-grok-bots": { "url": "<MCP URL>" }` to its MCP config and authenticate. Add `antigravity.google` to `ALLOWED_REDIRECT_HOSTS` first |
 | Muse (Meta AI agents) | Add a custom connector with the MCP URL. Set `ALLOWED_REDIRECT_HOSTS` to `claude.ai,claude.com,agent.meta.ai` first (see the note below) |
 | Cursor | Cursor's own OAuth returns to `cursor://...`, which this server does not accept. Use `mcp-remote` instead (it logs in through `localhost`): `"ask-grok-bots": { "command": "npx", "args": ["-y", "mcp-remote", "<MCP URL>"] }` (not tested yet) |
 | Others | Add a remote (streamable HTTP) MCP server with the MCP URL. If the login page says the redirect target is not allowed, add the client's callback host to `ALLOWED_REDIRECT_HOSTS` (setting it replaces the default list). If the client uses a custom scheme such as `myapp://`, use `mcp-remote` as for Cursor |
 
-**Which apps need `ALLOWED_REDIRECT_HOSTS`?** Only apps whose login returns to a web address: Claude (`claude.ai`, in the default list), Muse (`agent.meta.ai`), Antigravity (`antigravity.google`) and the like. Apps on your own computer that return to `localhost` / `127.0.0.1` (Claude Code, Codex, `mcp-remote` for Cursor...) are allowed by default (`ALLOW_LOOPBACK_REDIRECTS`), and still need the passphrase.
+**Which apps need `ALLOWED_REDIRECT_HOSTS`?** Only apps whose login returns to a web address: Claude (`claude.ai`, in the default list), ChatGPT (`chatgpt.com`), Muse (`agent.meta.ai`), Antigravity (`antigravity.google`) and the like. Apps on your own computer that return to `localhost` / `127.0.0.1` (Claude Code, Codex, `mcp-remote` for Cursor...) are allowed by default (`ALLOW_LOOPBACK_REDIRECTS`), and still need the passphrase.
 
 **Muse (Meta AI agents)**: set `ALLOWED_REDIRECT_HOSTS` to `claude.ai,claude.com,agent.meta.ai` (the callback is `https://agent.meta.ai/api/hatch/oauth/callback`). The passphrase page closed by itself in Muse's in-app browser; open it in an external browser. On Android, use your keyboard's clipboard history if you need to paste more than one value.
 
