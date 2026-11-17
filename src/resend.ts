@@ -1,4 +1,4 @@
-import { type Env, signingSecretOk } from "./env";
+import { type Env, signingSecretOk, webhookUrlOk } from "./env";
 import { WebhookRejectedError, buildWebhookPayload, replyBaseUrl, wakeGrokBot } from "./grok";
 import { claimResend, getConsultation, listResendDue, markResendDelivered, recordResendError } from "./store";
 
@@ -14,6 +14,10 @@ export const PURGE_CRON = "17 18 * * *";
  */
 export async function resendPending(env: Env, now = new Date()): Promise<{ resent: number; failed: number }> {
   if (!env.GROK_WEBHOOK_URL || !env.GROK_WEBHOOK_KEY) return { resent: 0, failed: 0 };
+  if (!webhookUrlOk(env)) {
+    console.log("resend skipped: GROK_WEBHOOK_URL is not https");
+    return { resent: 0, failed: 0 };
+  }
   if (!signingSecretOk(env)) {
     console.log("resend skipped: REPLY_SIGNING_SECRET is missing or too short");
     return { resent: 0, failed: 0 };

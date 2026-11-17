@@ -1,6 +1,6 @@
 // MCP endpoint for any MCP client (Claude, Codex, Cursor, Muse...). Streamable HTTP, JSON responses only, no sessions.
 // OAuthProvider authenticates the request before this is called.
-import { type Env, type GrantProps, MIN_SIGNING_SECRET_CHARS, codePointLength, signingSecretOk, truncate } from "./env";
+import { type Env, type GrantProps, MIN_SIGNING_SECRET_CHARS, codePointLength, signingSecretOk, truncate, webhookUrlOk } from "./env";
 import { readBodyLimited } from "./reply";
 import { WebhookRejectedError, WebhookUncertainError, buildWebhookPayload, wakeGrokBot } from "./grok";
 import {
@@ -117,8 +117,9 @@ function stringArg(args: Record<string, unknown>, name: string, max: number, req
 }
 
 function integerArg(value: unknown, fallback: number, min: number, max: number, name: string): number {
-  const n = value === undefined ? fallback : Number(value);
-  if (!Number.isInteger(n) || n < min || n > max) throw new Error(`${name} must be an integer from ${min} to ${max}.`);
+  // Numbers only; a string of digits is tolerated because some clients send numbers as text. Not booleans.
+  const n = value === undefined ? fallback : typeof value === "string" && /^\d{1,3}$/.test(value.trim()) ? Number(value) : value;
+  if (typeof n !== "number" || !Number.isInteger(n) || n < min || n > max) throw new Error(`${name} must be an integer from ${min} to ${max}.`);
   return n;
 }
 
@@ -182,6 +183,9 @@ async function waitForReply(env: Env, id: string, waitSeconds: number): Promise<
 async function askGrokBots(env: Env, args: Record<string, unknown>, props: GrantProps | undefined): Promise<ToolResult> {
   if (!env.GROK_WEBHOOK_URL || !env.GROK_WEBHOOK_KEY) {
     return errorResult("The Grok Bot webhook URL and key are not configured yet (set the GROK_WEBHOOK_URL and GROK_WEBHOOK_KEY secrets).");
+  }
+  if (!webhookUrlOk(env)) {
+    return errorResult("GROK_WEBHOOK_URL must be an https:// address (the key and the consultation are sent to it).");
   }
   if (!signingSecretOk(env)) {
     return errorResult(`REPLY_SIGNING_SECRET is not configured or shorter than ${MIN_SIGNING_SECRET_CHARS} characters.`);

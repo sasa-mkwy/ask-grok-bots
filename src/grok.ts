@@ -25,6 +25,8 @@ export function replyBaseUrl(env: Env, c: Pick<Consultation, "reply_base_url">):
 
 /** Body sent to the Grok Bot routine. The routine reads this JSON and POSTs its answer to reply.url. */
 export async function buildWebhookPayload(env: Env, c: Consultation, attempt = 1) {
+  const base = replyBaseUrl(env, c);
+  if (!base) throw new Error("The reply address is unknown (set PUBLIC_URL).");
   return {
     type: env.WEBHOOK_EVENT_TYPE?.trim() || DEFAULT_EVENT_TYPE,
     from: c.asked_by || DEFAULT_SENDER,
@@ -45,7 +47,7 @@ export async function buildWebhookPayload(env: Env, c: Consultation, attempt = 1
     question: c.question,
     context: c.context,
     reply: {
-      url: `${replyBaseUrl(env, c)}/reply/${c.id}`,
+      url: `${base}/reply/${c.id}`,
       token: await signReplyToken(env.REPLY_SIGNING_SECRET, c.id),
       how:
         'POST reply.url with header "Authorization: Bearer <reply.token>" and JSON body {"reply": "<your answer>"}. ' +

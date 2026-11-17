@@ -28,7 +28,7 @@ ask-grok-bots ──▶ your AI reads it with get_grok_reply
 - **Three tools**: `ask_grok_bots` (send), `get_grok_reply` (wait up to 50 s and read), `list_grok_consults` (recent list).
 - **Works with any MCP client** that supports remote HTTP servers with OAuth (dynamic client registration or Client ID Metadata Documents). Local apps that log in through `localhost` are supported.
 - **Tells the bots who is asking**: the `from` argument, or the connected app's name.
-- **Survives a sleeping bot**: if no reply arrives, the consultation is resent up to 3 times (20, 40 and 80 minutes apart), with the same id and token.
+- **Survives a sleeping bot**: if no reply arrives, the consultation is resent up to 3 times (20, 40 and 80 minutes apart), with the same id and token. A resend that fails still counts as one.
 - **Careful with uncertain delivery**: a webhook timeout or 5xx is not treated as a failure; a late reply is still accepted. Only a clear 4xx refusal fails a consultation.
 - **Per-consultation reply tokens** (HMAC), one reply per consultation, 30-day retention with a daily purge.
 
@@ -148,7 +148,7 @@ Ask your AI: "Ask the Grok Bots what they think."
 | --- | --- | --- | --- |
 | `LOGIN_PASSPHRASE` | secret | (required) | Passphrase on the connect page, 20+ characters. 5 failures lock an IP for an hour |
 | `REPLY_SIGNING_SECRET` | secret | (required) | Key for per-consultation reply tokens, 32+ characters. Without it the server refuses to send or accept anything |
-| `GROK_WEBHOOK_URL` / `GROK_WEBHOOK_KEY` | secret | (required) | The routine's webhook. The key is sent as `Authorization: Bearer` and `X-Automation-Key` |
+| `GROK_WEBHOOK_URL` / `GROK_WEBHOOK_KEY` | secret | (required) | The routine's webhook. The URL must be `https://` (the key and the consultation are sent to it). The key is sent as `Authorization: Bearer` and `X-Automation-Key` |
 | `ALLOWED_REDIRECT_HOSTS` | secret or var | `claude.ai,claude.com` | Hosts allowed as OAuth redirect targets (exact match, comma-separated). Setting it **replaces** the default, so keep `claude.ai,claude.com` in the list if you use Claude |
 | `ALLOW_LOOPBACK_REDIRECTS` | secret or var | allowed | Set `false` to refuse apps that log in through `localhost` / `127.0.0.1` |
 | `PUBLIC_URL` | secret or var | the request's origin | Base URL used in reply links and OAuth metadata. Without it, the origin of each request is used (and stored with the consultation for resends). If you serve both a custom domain and workers.dev, set it to the one your apps connect to |
@@ -179,8 +179,8 @@ Do not define the same name both in `wrangler.jsonc` `vars` and as a secret.
 
 `max_bots` is present only when the asking AI set it. From the second attempt on, `attempt` is 2 or more and `resend_note` is added. The routine should not start a second discussion for a consultation id it already has, but should resume one that stalled or re-send an answer that was not delivered; the template in `docs/` does this.
 
-Reply with `{"reply": "<answer>"}`, or `{"reply": "<reason>", "status": "failed"}` if the bots cannot answer.
-Responses: `200 {"ok":true}`, `400` empty reply or invalid JSON, `401` bad token, `404` unknown or expired, `405` not a POST, `409` already answered, `413` over 128 KiB or 30,000 characters, `500` server misconfigured.
+Reply with `{"reply": "<answer>"}`, or `{"reply": "<reason>", "status": "failed"}` if the bots cannot answer. If `Content-Type` is not `application/json`, the whole body is taken as the answer.
+Responses: `200 {"ok":true}`, `400` empty reply or invalid JSON, `401` bad token, `404` unknown or expired, `405` not a POST, `409` already answered or already failed, `413` over 128 KiB or 30,000 characters, `500` server misconfigured.
 
 ## Security notes
 
@@ -194,7 +194,7 @@ Responses: `200 {"ok":true}`, `400` empty reply or invalid JSON, `401` bad token
 
 **Things to know:**
 
-- This is a single-owner server: anyone with the passphrase can connect an app. Use a long random passphrase (the generated one above). The "5 failures per hour" lock is best effort (KV updates are not atomic, so parallel attempts can slip through); the passphrase's length is the real protection.
+- This is a single-owner server: anyone with the passphrase can connect an app. Use a long random passphrase (the generated one above). The "5 failures per hour" lock is best effort (KV updates are not atomic, so parallel attempts can slip through); the passphrase's length is the real protection. There is no lock across all addresses, so strangers cannot lock you out by failing on purpose.
 - Local apps are allowed to log in through `localhost` / `127.0.0.x` by default (tested in Chromium with `127.0.0.1`). IPv6 `[::1]` callbacks are not tested.
 - The consent page shows which app is connecting and where it returns, and warns when it returns to a local address.
 - Consultations are not separated per app: every connected app can list and read all consultations and replies on this server.

@@ -256,6 +256,14 @@ describe("OAuth redirect targets", () => {
     expect(isRedirectAllowed(e, remote("https://sub.claude.ai/cb"))).toBe(false);
   });
 
+  it("requires https for listed hosts, and http(s) for loopback", () => {
+    const e = { ALLOWED_REDIRECT_HOSTS: "claude.ai" } as Env;
+    expect(isRedirectAllowed(e, remote("http://claude.ai/api/mcp/auth_callback"))).toBe(false);
+    expect(isRedirectAllowed(e, remote("myapp://claude.ai/cb"))).toBe(false);
+    expect(isRedirectUrlAllowed(e, "http://claude.ai/cb?error=access_denied")).toBe(false);
+    expect(isRedirectAllowed(e, { redirectUri: "myapp://127.0.0.1/cb", redirectIsLoopback: true })).toBe(false);
+  });
+
   it("allows local apps (loopback) by default, and refuses them when ALLOW_LOOPBACK_REDIRECTS=false", () => {
     expect(isRedirectAllowed({ ALLOWED_REDIRECT_HOSTS: "claude.ai" } as Env, loopback)).toBe(true);
     expect(isRedirectAllowed({ ALLOWED_REDIRECT_HOSTS: "claude.ai", ALLOW_LOOPBACK_REDIRECTS: "false" } as Env, loopback)).toBe(false);
@@ -671,6 +679,9 @@ describe("max_bots (how many bots to ask)", () => {
 
     expect((await callTool("ask_grok_bots", { question: "q", max_bots: 11 })).isError).toBe(true);
     expect((await callTool("ask_grok_bots", { question: "q", max_bots: 1.5 })).isError).toBe(true);
+    expect((await callTool("ask_grok_bots", { question: "q", max_bots: "2" })).isError).toBeFalsy();
+    expect((await callTool("ask_grok_bots", { question: "q", max_bots: "2.5" })).isError).toBe(true);
+    expect((await callTool("ask_grok_bots", { question: "q", max_bots: true })).isError).toBe(true);
   });
 });
 
@@ -730,10 +741,26 @@ describe("login flow (unit, so CI catches regressions without the e2e server)", 
     expect((await post({ decision: "approve", passphrase: "x" }, "198.51.100.1")).status).toBe(401); // other clients still try
   });
 
-  it("50 failures across all clients pause logins for everyone", async () => {
+  it("failures from other addresses never lock the owner out (no global lock)", async () => {
     const { post } = setup();
-    for (let i = 0; i < 50; i++) await post({ decision: "approve", passphrase: "wrong" }, `192.0.2.${i}`);
-    expect((await post({ decision: "approve", passphrase: "correct-passphrase-0123456789" }, "198.51.100.7")).status).toBe(429);
+    for (let i = 0; i < 60; i++) await post({ decision: "approve", passphrase: "wrong" }, `192.0.2.${i}`);
+    expect((await post({ decision: "approve", passphrase: "correct-passphrase-0123456789" }, "198.51.100.7")).status).toBe(302);
+  });
+});
+
+describe("webhook address", () => {
+  it("refuses a non-https GROK_WEBHOOK_URL without sending anything", async () => {
+    const sent: string[] = [];
+    vi.stubGlobal("fetch", async (u: string) => {
+      sent.push(u);
+      return new Response("ok");
+    });
+    env = { ...env, GROK_WEBHOOK_URL: "http://hooks.example/wake" } as Env;
+    const res = await callTool("ask_grok_bots", { question: "q" });
+    expect(res.isError).toBe(true);
+    expect(res.text).toContain("https://");
+    expect(await resendPending(env, new Date(Date.now() + 60 * MIN))).toEqual({ resent: 0, failed: 0 });
+    expect(sent).toEqual([]);
   });
 });
 

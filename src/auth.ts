@@ -1,7 +1,7 @@
 // /authorize: the login + consent page shown once when an AI client connects.
 // Login is a single passphrase (secret LOGIN_PASSPHRASE). This is a single-owner server, so there are no accounts.
 import { AuthorizationError, CimdFetchError, type ConsentDescription } from "@cloudflare/workers-oauth-provider";
-import { type Env, type GrantProps, parseList, secretEqual, truncate } from "./env";
+import { type Env, type GrantProps, codePointLength, parseList, secretEqual, truncate } from "./env";
 
 const MAX_FAILURES_PER_HOUR = 5;
 export const MIN_PASSPHRASE_CHARS = 20;
@@ -117,14 +117,20 @@ function pageDenial<T extends { headers: Headers }>(denied: T): T {
 
 /** Is this redirect target allowed? Listed hosts always; loopback (local apps) unless ALLOW_LOOPBACK_REDIRECTS=false. */
 export function isRedirectAllowed(env: Env, d: Pick<ConsentDescription, "redirectUri" | "redirectIsLoopback">): boolean {
-  if (d.redirectIsLoopback) return env.ALLOW_LOOPBACK_REDIRECTS?.trim().toLowerCase() !== "false";
-  let host: string;
+  let url: URL;
   try {
-    host = new URL(d.redirectUri).hostname.toLowerCase();
+    url = new URL(d.redirectUri);
   } catch {
     return false;
   }
-  return parseList(env.ALLOWED_REDIRECT_HOSTS).includes(host);
+  // The library already enforces this; checked again here so the allowlist never depends on it.
+  if (d.redirectIsLoopback) {
+    return url.protocol === "http:" || url.protocol === "https:"
+      ? env.ALLOW_LOOPBACK_REDIRECTS?.trim().toLowerCase() !== "false"
+      : false;
+  }
+  if (url.protocol !== "https:") return false;
+  return parseList(env.ALLOWED_REDIRECT_HOSTS).includes(url.hostname.toLowerCase());
 }
 
 /**
@@ -142,9 +148,6 @@ export function clientKey(request: Request): string {
   return `${groups.slice(0, 4).join(":")}::/64`;
 }
 
-/** Failures across all clients per hour; past this, logins pause for everyone (stops distributed guessing). */
-const MAX_GLOBAL_FAILURES_PER_HOUR = 50;
-const GLOBAL_KEY = "all";
 const failureKey = (who: string) => `login-failures:${who}`;
 
 async function failureCount(env: Env, who: string): Promise<number> {
@@ -160,15 +163,14 @@ async function bump(env: Env, who: string): Promise<void> {
  * Best effort: KV read-modify-write is not atomic, so concurrent failures can be undercounted.
  * The real protection is a long random passphrase (README: generated, 20+ characters); this only slows guessing.
  */
+// There is deliberately no lock across all clients: a stranger could use it to lock the owner out,
+// and a random 20+ character passphrase cannot be guessed by spreading attempts over many addresses.
 async function recordFailure(env: Env, who: string): Promise<void> {
   await bump(env, who);
-  await bump(env, GLOBAL_KEY);
 }
 
 async function isLocked(env: Env, who: string): Promise<boolean> {
-  return (
-    (await failureCount(env, who)) >= MAX_FAILURES_PER_HOUR || (await failureCount(env, GLOBAL_KEY)) >= MAX_GLOBAL_FAILURES_PER_HOUR
-  );
+  return (await failureCount(env, who)) >= MAX_FAILURES_PER_HOUR;
 }
 
 async function clientNameOf(env: Env, clientId: string): Promise<string | undefined> {
@@ -213,7 +215,7 @@ export async function handleAuthorize(request: Request, env: Env): Promise<Respo
         const denied = await oauth.denyConsent(request, handle);
         return new Response(null, { status: 302, headers: denied.headers });
       }
-      if (!env.LOGIN_PASSPHRASE || env.LOGIN_PASSPHRASE.length < MIN_PASSPHRASE_CHARS) {
+      if (!env.LOGIN_PASSPHRASE || codePointLength(env.LOGIN_PASSPHRASE) < MIN_PASSPHRASE_CHARS) {
         // A setup problem, not a guess: say so, and do not count it as a failure.
         const denied = pageDenial(await oauth.denyConsent(request, handle, { description: "server not configured" }));
         return page(

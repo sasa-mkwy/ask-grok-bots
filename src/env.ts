@@ -39,7 +39,7 @@ export const MIN_SIGNING_SECRET_CHARS = 32;
 
 /** An empty or short signing key would make reply tokens guessable, so refuse to work without a proper one. */
 export const signingSecretOk = (env: Pick<Env, "REPLY_SIGNING_SECRET">) =>
-  (env.REPLY_SIGNING_SECRET ?? "").length >= MIN_SIGNING_SECRET_CHARS;
+  codePointLength(env.REPLY_SIGNING_SECRET ?? "") >= MIN_SIGNING_SECRET_CHARS;
 
 export function parseList(value: string | undefined): string[] {
   return (value ?? "")
@@ -70,3 +70,12 @@ export const codePointLength = (text: string) => Array.from(text).length;
 
 /** Cut to at most max code points, never splitting a surrogate pair (emoji etc.). */
 export const truncate = (text: string, max: number) => Array.from(text).slice(0, max).join("");
+
+/** The webhook carries the key and the consultation, so it must be https. */
+export function webhookUrlOk(env: Pick<Env, "GROK_WEBHOOK_URL">): boolean {
+  try {
+    return new URL(env.GROK_WEBHOOK_URL ?? "").protocol === "https:";
+  } catch {
+    return false;
+  }
+}
