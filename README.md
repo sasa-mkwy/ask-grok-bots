@@ -143,21 +143,29 @@ Ask your AI: "Ask the Grok Bots what they think."
 
   `attempts` counts the webhook sends. After the last automatic resend the note says so; if nothing arrives after that, check the routine and ask again. The last resend error, if any, is in `delivery_error`.
 
-## Get told when the answer arrives (optional)
+## Notice the answer (optional)
 
-Asking is only half of the round trip. The bots often answer minutes later, when your AI has already moved on, and without a notice it only finds out if someone calls `get_grok_reply` again.
+Asking is only half of the round trip. The bots often answer minutes later, when your AI has already moved on. Pick one of three ways to notice:
 
-ask-grok-bots can tell a webhook receiver of yours as soon as a reply is saved:
+| Way | How | Good for |
+| --- | --- | --- |
+| **Get told** (fastest) | ask-grok-bots sends a short notice to your own webhook receiver, which wakes your AI | Agents that can be started from outside: Muse, Claude Code, Codex, Antigravity |
+| **Check on a schedule** | Your AI calls `list_grok_consults` every so often and reads only the consultations that became `answered` or `failed` | Chat apps (ChatGPT, Claude, Gemini) with scheduled tasks, or an agent's own loop |
+| **Ask when needed** | Call `get_grok_reply` again later | Everything; this is the default |
 
-1. Run a receiver that accepts an HTTPS `POST` and checks an `X-Webhook-Secret` header, and that wakes your AI when something arrives. See [docs/notice-receiver.md](docs/notice-receiver.md) for what it needs to do.
-2. Set two secrets and deploy again:
+Chat apps cannot be woken by a webhook: they only act when you send a message. Use their scheduled tasks to check instead.
+
+### Get told
+
+1. Run a receiver that accepts an HTTPS `POST`, checks an `X-Webhook-Secret` header, and wakes your AI when something arrives. [docs/notice-receiver.md](docs/notice-receiver.md) says what it must do, and has ready-made prompts for Muse, Claude Code and Codex that build one.
+2. Set two secrets (each takes effect right away):
 
    ```sh
    npx wrangler secret put REPLY_NOTIFY_URL      # e.g. https://hooks.example.com/hook/ask-grok-bots
    npx wrangler secret put REPLY_NOTIFY_SECRET   # 32+ random characters, the same value your receiver checks
    ```
 
-The notice carries only the id, the title and the status, never the answer; your AI reads the answer with `get_grok_reply`, which also keeps it fenced as outside text:
+The notice carries only the id, the title and the status, never the answer; your AI reads the answer with `get_grok_reply`, which keeps it fenced as outside text:
 
 ```json
 {
@@ -169,7 +177,11 @@ The notice carries only the id, the title and the status, never the answer; your
 }
 ```
 
-`status` is `answered` or `failed`. A notice is sent once, after the reply is saved; if the receiver is down it is lost (the reply is not), so `get_grok_reply` still works as before.
+`status` is `answered` or `failed`. A notice is sent once, after the reply is saved; if the receiver is down the notice is lost but the reply is not, so the other two ways still work.
+
+### Check on a schedule
+
+Have the check cost nothing when there is nothing new: look at `list_grok_consults`, and wake the AI (or read the answer) only when a consultation you asked about is now `answered` or `failed`. A check every minute or two is plenty; answers usually take minutes.
 
 ## Configuration
 

@@ -27,6 +27,16 @@ X-Webhook-Secret: <REPLY_NOTIFY_SECRET>
 5. **新しいものが届いたらAIを起こす。** AIには `consultation_id` で `get_grok_reply` を呼んでもらいます。回答は「外から来た文章」と分かる囲みに入って返ってきます。
 6. **秘密の値をログやチャットに出さない。** `REPLY_NOTIFY_SECRET` は、自分だけが読めるファイルに置きます。
 
+## そのまま使える作り方
+
+エージェントに受け口（PC上の小さなサーバー、Cloudflare Tunnel、届いたらエージェントを起こす見張り）を作らせるプロンプトです。それぞれ、ask-grok-bots とつなぐ手順も付いています。
+
+- [Muse](notice-receiver/muse.md)
+- [Claude Code](notice-receiver/claude-code.md)
+- [Codex](notice-receiver/codex.md)
+
+Museコミュニティで RYFI さんが共有したプロンプトを元に、許可をもらって手直ししたものです。プロンプトは英語ですが、日本語で話しているエージェントにもそのまま渡せます。
+
 ## 知らせを取りこぼしたら
 
 何も失われません。回答はサーバーに30日間残ります。AIに `list_grok_consults` で回答済みの相談を確かめてもらい、`get_grok_reply` で読んでもらえば大丈夫です。

@@ -27,6 +27,16 @@ X-Webhook-Secret: <REPLY_NOTIFY_SECRET>
 5. **Wake your AI** when a new event appears, and have it call `get_grok_reply` with the `consultation_id`. The answer comes back fenced and marked as outside text.
 6. **Keep secrets out of logs and chat.** Store `REPLY_NOTIFY_SECRET` in a file only you can read.
 
+## Ready-made recipes
+
+Prompts that have your agent build such a receiver (a small local server, a Cloudflare Tunnel and a watcher that wakes the agent), each followed by the steps that connect ask-grok-bots:
+
+- [Muse](notice-receiver/muse.md)
+- [Claude Code](notice-receiver/claude-code.md)
+- [Codex](notice-receiver/codex.md)
+
+They are based on a prompt shared by RYFI in the Muse community, used with permission. The prompts are in English; the agents follow them in any language.
+
 ## If you miss a notice
 
 Nothing is lost: the reply stays on the server for 30 days. Your AI can call `list_grok_consults` to see which consultations are answered, and `get_grok_reply` to read them.
