@@ -29,6 +29,7 @@ ask-grok-bots ──▶ your AI reads it with get_grok_reply
 - **Works with any MCP client** that supports remote HTTP servers with OAuth (dynamic client registration or Client ID Metadata Documents). Local apps that log in through `localhost` are supported.
 - **Tells the bots who is asking**: the `from` argument, or the connected app's name.
 - **Survives a sleeping bot**: if no reply arrives, the consultation is resent up to 3 times (20, 40 and 80 minutes apart), with the same id and token. A resend that fails still counts as one.
+- **Tells you when the answer arrives** (optional): a short notice to your own webhook receiver, so your AI does not have to keep checking.
 - **Careful with uncertain delivery**: a webhook timeout or 5xx is not treated as a failure; a late reply is still accepted. Only a clear 4xx refusal fails a consultation.
 - **Per-consultation reply tokens** (HMAC), one reply per consultation, 30-day retention with a daily purge.
 
@@ -142,6 +143,34 @@ Ask your AI: "Ask the Grok Bots what they think."
 
   `attempts` counts the webhook sends. After the last automatic resend the note says so; if nothing arrives after that, check the routine and ask again. The last resend error, if any, is in `delivery_error`.
 
+## Get told when the answer arrives (optional)
+
+Asking is only half of the round trip. The bots often answer minutes later, when your AI has already moved on, and without a notice it only finds out if someone calls `get_grok_reply` again.
+
+ask-grok-bots can tell a webhook receiver of yours as soon as a reply is saved:
+
+1. Run a receiver that accepts an HTTPS `POST` and checks an `X-Webhook-Secret` header, and that wakes your AI when something arrives. See [docs/notice-receiver.md](docs/notice-receiver.md) for what it needs to do.
+2. Set two secrets and deploy again:
+
+   ```sh
+   npx wrangler secret put REPLY_NOTIFY_URL      # e.g. https://hooks.example.com/hook/ask-grok-bots
+   npx wrangler secret put REPLY_NOTIFY_SECRET   # 32+ random characters, the same value your receiver checks
+   ```
+
+The notice carries only the id, the title and the status, never the answer; your AI reads the answer with `get_grok_reply`, which also keeps it fenced as outside text:
+
+```json
+{
+  "type": "grok_bots_reply",
+  "consultation_id": "…",
+  "title": "…",
+  "status": "answered",
+  "next": "Call get_grok_reply with this consultation_id to read the answer."
+}
+```
+
+`status` is `answered` or `failed`. A notice is sent once, after the reply is saved; if the receiver is down it is lost (the reply is not), so `get_grok_reply` still works as before.
+
 ## Configuration
 
 | Name | Kind | Default | Meaning |
@@ -152,6 +181,7 @@ Ask your AI: "Ask the Grok Bots what they think."
 | `ALLOWED_REDIRECT_HOSTS` | secret or var | `claude.ai,claude.com` | Hosts allowed as OAuth redirect targets (exact match, comma-separated). Setting it **replaces** the default, so keep `claude.ai,claude.com` in the list if you use Claude |
 | `ALLOW_LOOPBACK_REDIRECTS` | secret or var | allowed | Set `false` to refuse apps that log in through `localhost` / `127.0.0.1` |
 | `PUBLIC_URL` | secret or var | the request's origin | Base URL used in reply links and OAuth metadata. Without it, the origin of each request is used (and stored with the consultation for resends). If you serve both a custom domain and workers.dev, set it to the one your apps connect to |
+| `REPLY_NOTIFY_URL` / `REPLY_NOTIFY_SECRET` | secret | (off) | Optional reply notice (see above). The URL must be `https://` and the secret 32+ characters; the secret is sent as `X-Webhook-Secret` |
 | `WEBHOOK_EVENT_TYPE` | secret or var | `grok_bots_consultation` | The `type` field of the webhook body. If you change it, change the routine instructions to match |
 
 Do not define the same name both in `wrangler.jsonc` `vars` and as a secret.

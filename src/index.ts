@@ -8,14 +8,14 @@ import { PURGE_CRON, RESEND_CRON, resendPending } from "./resend";
 import { purgeExpired } from "./store";
 
 const defaultHandler: ExportedHandler<Env> = {
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
     const url = new URL(request.url);
     if (url.pathname === "/authorize") return handleAuthorize(request, env);
     if (request.method === "GET" && url.pathname === "/health") return new Response("ok");
     const match = url.pathname.match(/^\/reply\/([0-9a-f-]{36})$/);
     if (match) {
       if (request.method !== "POST") return new Response("method not allowed", { status: 405, headers: { Allow: "POST" } });
-      return handleReply(request, env, match[1]);
+      return handleReply(request, env, match[1], (p) => ctx.waitUntil(p));
     }
     return new Response("not found", { status: 404 });
   },

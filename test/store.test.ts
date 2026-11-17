@@ -9,6 +9,7 @@ import { clientKey, displayName, handleAuthorize, isRedirectAllowed, isRedirectU
 import { normalizePublicUrl, withDefaults } from "../src/config";
 import { handleMcp } from "../src/mcp";
 import { handleReply } from "../src/reply";
+import { notifyConfigured } from "../src/notify";
 import { RESEND_CRON, resendPending } from "../src/resend";
 import {
   type Consultation,
@@ -745,6 +746,65 @@ describe("login flow (unit, so CI catches regressions without the e2e server)", 
     const { post } = setup();
     for (let i = 0; i < 60; i++) await post({ decision: "approve", passphrase: "wrong" }, `192.0.2.${i}`);
     expect((await post({ decision: "approve", passphrase: "correct-passphrase-0123456789" }, "198.51.100.7")).status).toBe(302);
+  });
+});
+
+describe("reply notice (REPLY_NOTIFY_URL)", () => {
+  const NOTIFY_SECRET = "n".repeat(32);
+  async function replyWithNotice(e: Env, body: unknown) {
+    const c = consultation({ created_at: new Date().toISOString(), title: "notice test" });
+    await insertConsultation(db, c);
+    const pending: Promise<unknown>[] = [];
+    const res = await handleReply(
+      new Request(`https://x/reply/${c.id}`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${await signReplyToken(SECRET, c.id)}`, "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      }),
+      e,
+      c.id,
+      (p) => pending.push(p),
+    );
+    await Promise.all(pending);
+    return { res, id: c.id };
+  }
+
+  it("tells the receiver the id, title and status, never the answer", async () => {
+    const calls: { url: string; init: RequestInit }[] = [];
+    vi.stubGlobal("fetch", async (url: string, init: RequestInit) => {
+      calls.push({ url, init });
+      return new Response("ok");
+    });
+    const e = { ...env, REPLY_NOTIFY_URL: "https://hooks.example/hook/ask-grok-bots", REPLY_NOTIFY_SECRET: NOTIFY_SECRET } as Env;
+    const { res, id } = await replyWithNotice(e, { reply: "the secret answer" });
+    expect(res.status).toBe(200);
+    expect(calls).toHaveLength(1);
+    expect(calls[0].url).toBe("https://hooks.example/hook/ask-grok-bots");
+    expect((calls[0].init.headers as Record<string, string>)["X-Webhook-Secret"]).toBe(NOTIFY_SECRET);
+    const body = JSON.parse(String(calls[0].init.body));
+    expect(body).toMatchObject({ type: "grok_bots_reply", consultation_id: id, title: "notice test", status: "answered" });
+    expect(String(calls[0].init.body)).not.toContain("the secret answer");
+
+    const failed = await replyWithNotice(e, { reply: "cannot", status: "failed" });
+    expect(JSON.parse(String(calls[1].init.body)).status).toBe("failed");
+    expect(failed.res.status).toBe(200);
+  });
+
+  it("is off unless the URL is https and the secret is long enough; a failing receiver never breaks the reply", async () => {
+    expect(notifyConfigured({ REPLY_NOTIFY_URL: "http://hooks.example/h", REPLY_NOTIFY_SECRET: NOTIFY_SECRET })).toBe(false);
+    expect(notifyConfigured({ REPLY_NOTIFY_URL: "https://hooks.example/h", REPLY_NOTIFY_SECRET: "short" })).toBe(false);
+    expect(notifyConfigured({})).toBe(false);
+    const calls: string[] = [];
+    vi.stubGlobal("fetch", async (url: string) => {
+      calls.push(url);
+      throw new TypeError("network down");
+    });
+    expect((await replyWithNotice({ ...env, REPLY_NOTIFY_URL: "http://hooks.example/h", REPLY_NOTIFY_SECRET: NOTIFY_SECRET } as Env, { reply: "a" })).res.status).toBe(200);
+    expect(calls).toEqual([]);
+    const { res, id } = await replyWithNotice({ ...env, REPLY_NOTIFY_URL: "https://hooks.example/h", REPLY_NOTIFY_SECRET: NOTIFY_SECRET } as Env, { reply: "b" });
+    expect(res.status).toBe(200);
+    expect(calls).toHaveLength(1);
+    expect((await getConsultation(db, id))!.reply).toBe("b");
   });
 });
 

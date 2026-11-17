@@ -29,6 +29,7 @@ ask-grok-bots ──▶ AIが get_grok_reply で受け取る
 - **MCPクライアントなら何でも使えます**。OAuth付きのリモートHTTPサーバーに対応していれば大丈夫です（動的クライアント登録か、Client ID Metadata Document）。`localhost` でログインするPC上のアプリにも対応しています。
 - **誰からの相談かをBotに伝えます**：`from` 引数か、接続したアプリの名前を使います。
 - **Botが寝ていても取りこぼしません**：回答がなければ、同じ相談ID・同じトークンのまま最大3回（20分・40分・80分の間隔）送り直します。送り直しに失敗しても、1回と数えます。
+- **回答が届いたら知らせます**（省略可）：自分の受け口に短い知らせを送るので、AIが何度も確かめに行かなくて済みます。
 - **届いたか分からないときも慎重に扱います**：Webhookのタイムアウトや5xxは失敗にせず、あとから届いた回答も受け付けます。失敗にするのは4xxで明確に断られたときだけです。
 - **相談ごとの回答用トークン**（HMAC）、1件につき回答は1回、保存は30日で毎日自動削除。
 
@@ -142,6 +143,34 @@ AIに「Grok Botたちの意見も聞いて」と頼みます。
 
   `attempts` はWebhookを送った回数です。自動の送り直しを使い切ると、注記にそう出ます。そのあとも答えがなければ、ルーティンを確かめて聞き直してください。最後の送り直しでのエラーは `delivery_error` に入ります。
 
+## 回答が届いたことに気づく（省略可）
+
+相談を送るだけでは、やりとりの半分です。Botたちが答えるのは数分後のことが多く、そのころAIは別の作業に移っています。知らせがなければ、誰かがもう一度 `get_grok_reply` を呼ぶまで、回答が来たことに気づけません。
+
+ask-grok-bots は、回答を保存したらすぐに、自分で用意した受け口（Webhookの受信側）に知らせることができます。
+
+1. HTTPSの `POST` を受け取り、`X-Webhook-Secret` ヘッダーを確かめて、届いたら自分のAIを起こす受け口を用意します。何をすればいいかは [docs/notice-receiver.ja.md](docs/notice-receiver.ja.md) にあります。
+2. Secretを2つ入れて、もう一度デプロイします。
+
+   ```sh
+   npx wrangler secret put REPLY_NOTIFY_URL      # 例: https://hooks.example.com/hook/ask-grok-bots
+   npx wrangler secret put REPLY_NOTIFY_SECRET   # 32文字以上のランダムな値。受け口が確かめる値と同じもの
+   ```
+
+知らせに入るのは、相談ID・タイトル・状態だけで、回答の本文は入りません。本文はAIが `get_grok_reply` で読みます（「外から来た文章」の囲みもそのまま付きます）。
+
+```json
+{
+  "type": "grok_bots_reply",
+  "consultation_id": "…",
+  "title": "…",
+  "status": "answered",
+  "next": "Call get_grok_reply with this consultation_id to read the answer."
+}
+```
+
+`status` は `answered`（回答済み）か `failed`（答えられない）です。知らせは回答を保存したあとに1回だけ送ります。受け口が止まっていると知らせは失われますが、回答は失われません。`get_grok_reply` はこれまでどおり使えます。
+
 ## 設定
 
 | 名前 | 種類 | 既定値 | 意味 |
@@ -152,6 +181,7 @@ AIに「Grok Botたちの意見も聞いて」と頼みます。
 | `ALLOWED_REDIRECT_HOSTS` | Secret か var | `claude.ai,claude.com` | OAuthの戻り先として許可するホスト（完全一致、カンマ区切り）。設定すると既定値が**置き換わる**ので、Claudeも使うなら `claude.ai,claude.com` も入れる |
 | `ALLOW_LOOPBACK_REDIRECTS` | Secret か var | 許可 | `false` にすると、`localhost` や `127.0.0.1` でログインするアプリを断る |
 | `PUBLIC_URL` | Secret か var | リクエストのオリジン | 回答の送り先URLとOAuthの情報の元。未設定なら、リクエストのオリジンを使う（相談ごとに保存して、送り直しにも使う）。独自ドメインとworkers.devの両方で公開するなら、アプリが接続する方を設定する |
+| `REPLY_NOTIFY_URL` / `REPLY_NOTIFY_SECRET` | Secret | （なし） | 回答の知らせ（上を参照）。URLは `https://`、秘密の値は32文字以上。`X-Webhook-Secret` で送る |
 | `WEBHOOK_EVENT_TYPE` | Secret か var | `grok_bots_consultation` | Webhook本文の `type`。変えるときは、ルーティンの指示文もそろえる |
 
 同じ名前を `wrangler.jsonc` の `vars` とSecretの両方に置かないでください。

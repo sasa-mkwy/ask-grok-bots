@@ -1,5 +1,6 @@
 import { type Env, codePointLength, signingSecretOk } from "./env";
 import { getConsultation, saveReply, verifyReplyToken } from "./store";
+import { sendReplyNotice } from "./notify";
 
 export const MAX_REPLY_CHARS = 30000;
 const MAX_REPLY_BODY_BYTES = 128 * 1024;
@@ -36,7 +37,12 @@ export async function readBodyLimited(request: Request, maxBytes: number): Promi
 }
 
 /** Where the Grok Bot POSTs its answer. Authenticated with the per-consultation signed token. */
-export async function handleReply(request: Request, env: Env, id: string): Promise<Response> {
+export async function handleReply(
+  request: Request,
+  env: Env,
+  id: string,
+  waitUntil: (promise: Promise<unknown>) => void = () => {},
+): Promise<Response> {
   if (!signingSecretOk(env)) {
     console.log("reply refused: REPLY_SIGNING_SECRET is missing or too short");
     return json({ error: "server misconfigured" }, 500);
@@ -81,5 +87,7 @@ export async function handleReply(request: Request, env: Env, id: string): Promi
   if (saved === "not_found") return json({ error: "consultation not found or expired" }, 404);
   if (saved === "already_closed") return json({ error: "already answered" }, 409);
   console.log("grok reply saved", { id, failed, chars: reply.length });
+  // After the response, so a slow receiver never delays the bot.
+  waitUntil(sendReplyNotice(env, { consultation_id: id, title: c.title, status: failed ? "failed" : "answered" }));
   return json({ ok: true });
 }

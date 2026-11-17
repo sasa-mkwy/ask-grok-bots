@@ -26,6 +26,10 @@ export interface Env {
   GROK_WEBHOOK_KEY: string;
   /** Key for signing per-consultation reply tokens (32+ random characters). */
   REPLY_SIGNING_SECRET: string;
+  /** Optional: https address told "a reply arrived" (id, title, status only). */
+  REPLY_NOTIFY_URL?: string;
+  /** Optional: sent as X-Webhook-Secret with each notice (32+ characters). */
+  REPLY_NOTIFY_SECRET?: string;
 }
 
 /** Properties stored with each OAuth grant, available as ctx.props in the MCP handler. */
