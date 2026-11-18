@@ -157,7 +157,7 @@ Chat apps cannot be woken by a webhook: they only act when you send a message. U
 
 ### Get told
 
-1. Run a receiver that accepts an HTTPS `POST`, checks an `X-Webhook-Secret` header, and wakes your AI when something arrives. [docs/notice-receiver.md](docs/notice-receiver.md) says what it must do, and has ready-made prompts for Muse, Claude Code and Codex that build one.
+1. Run a receiver that accepts an HTTPS `POST`, checks an `X-Webhook-Secret` header, and wakes your AI when something arrives. [docs/notice-receiver.md](docs/notice-receiver.md) says what it must do, and has ready-made prompts for Muse, Claude Code, Codex and Antigravity that build one (the last three wake the agent through its CLI).
 2. Set two secrets (each takes effect right away):
 
    ```sh

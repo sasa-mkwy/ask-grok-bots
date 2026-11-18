@@ -157,7 +157,7 @@ AIに「Grok Botたちの意見も聞いて」と頼みます。
 
 ### 知らせを受ける
 
-1. HTTPSの `POST` を受け取り、`X-Webhook-Secret` ヘッダーを確かめて、届いたらAIを起こす受け口を用意します。受け口がすることは [docs/notice-receiver.ja.md](docs/notice-receiver.ja.md) にあります。Muse・Claude Code・Codex に受け口を作らせるプロンプトも、そこから開けます。
+1. HTTPSの `POST` を受け取り、`X-Webhook-Secret` ヘッダーを確かめて、届いたらAIを起こす受け口を用意します。受け口がすることは [docs/notice-receiver.ja.md](docs/notice-receiver.ja.md) にあります。Muse・Claude Code・Codex・Antigravity に受け口を作らせるプロンプトも、そこから開けます（後ろの3つはCLIでエージェントを起こします）。
 2. Secretを2つ入れます（入れたらすぐに効きます）。
 
    ```sh

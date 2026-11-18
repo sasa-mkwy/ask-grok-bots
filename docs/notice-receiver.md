@@ -34,8 +34,9 @@ Prompts that have your agent build such a receiver (a small local server, a Clou
 - [Muse](notice-receiver/muse.md)
 - [Claude Code](notice-receiver/claude-code.md)
 - [Codex](notice-receiver/codex.md)
+- [Antigravity](notice-receiver/antigravity.md)
 
-They are based on a prompt shared by RYFI in the Muse community, used with permission. The prompts are in English; the agents follow them in any language.
+The Claude Code, Codex and Antigravity recipes wake the agent through its CLI (`claude -p`, `codex exec`, `agy -p`); those runs do not appear in the desktop apps, so their results are written to files. They are based on a prompt shared by RYFI in the Muse community, used with permission. The prompts are in English; the agents follow them in any language.
 
 ## If you miss a notice
 

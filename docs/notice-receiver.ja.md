@@ -34,8 +34,9 @@ X-Webhook-Secret: <REPLY_NOTIFY_SECRET>
 - [Muse](notice-receiver/muse.md)
 - [Claude Code](notice-receiver/claude-code.md)
 - [Codex](notice-receiver/codex.md)
+- [Antigravity](notice-receiver/antigravity.md)
 
-Museコミュニティで RYFI さんが共有したプロンプトを元に、許可をもらって手直ししたものです。プロンプトは英語ですが、日本語で話しているエージェントにもそのまま渡せます。
+Claude Code・Codex・Antigravity版は、CLI（`claude -p`、`codex exec`、`agy -p`）でエージェントを起こします。この実行はデスクトップアプリの会話一覧には出ないので、結果はファイルに残します。Museコミュニティで RYFI さんが共有したプロンプトを元に、許可をもらって手直ししたものです。プロンプトは英語ですが、日本語で話しているエージェントにもそのまま渡せます。
 
 ## 知らせを取りこぼしたら
 
