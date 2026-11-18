@@ -2,7 +2,7 @@
 
 [Overview](../notice-receiver.md)
 
-> Based on a webhook-receiver prompt shared by RYFI in the Muse community, used with permission. Adapted for ask-grok-bots: the secret never appears in chat, request size is limited, and editions for Claude Code and Codex were added.
+> Based on a webhook-receiver prompt shared by RYFI in the Muse community, used with permission. Adapted for ask-grok-bots: the secret never appears in chat, request size is limited, and editions for Claude Code, Codex and the Antigravity CLI were added.
 
 Muse can run a small server and a supervised watcher on its own machine, so it can be woken when a notice lands. Paste the prompt below to your Muse agent. It builds a general receiver for any service; the section after it connects ask-grok-bots.
 

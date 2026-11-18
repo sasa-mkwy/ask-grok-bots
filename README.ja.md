@@ -111,13 +111,15 @@ MCPのURLは `https://ask-grok-bots.<あなたのサブドメイン>.workers.dev
 | ChatGPT（Web・アプリ） | プラグイン画面 →「＋」→「カスタムMCPサーバーを追加」でMCPのURLを登録し、認証。チャットでは `@` から選ぶ。先に `ALLOWED_REDIRECT_HOSTS` へ `chatgpt.com` を足す |
 | Codex（アプリ・CLI） | アプリでは、Codexに「このMCPサーバーを入れて」とMCPのURLを渡して頼み、出てきた画面で認証する。CLIでは `codex mcp add ask-grok-bots --url <MCPのURL>` のあと、`codex mcp login ask-grok-bots`（どちらも `localhost` に戻るので設定は不要） |
 | Gemini（Web・アプリ） | カスタマイズ → 連携サービス →「＋ カスタム」でMCPのURLを入れ、認証（クライアントID・シークレットは空欄）。先に `ALLOWED_REDIRECT_HOSTS` へ `oauth-redirect.googleusercontent.com` を足す |
-| Antigravity（アプリ・CLI） | MCPの設定に `"ask-grok-bots": { "url": "<MCPのURL>" }` を足して認証。先に `ALLOWED_REDIRECT_HOSTS` へ `antigravity.google` を足す |
+| Antigravity（アプリ・CLI） | MCPの設定に `"ask-grok-bots": { "url": "<MCPのURL>" }` を足して認証。先に `ALLOWED_REDIRECT_HOSTS` へ `antigravity.google` を足す。CLI（`agy`）は接続が別：`agy mcp add ask-grok-bots <MCPのURL>` のあと、`agy` の `/mcp` から認証 |
 | Cursor（未検証） | Cursor自身のOAuthは `cursor://...` に戻るので、このサーバーでは使えない。代わりに `mcp-remote` を使う（`localhost` に戻る）: `"ask-grok-bots": { "command": "npx", "args": ["-y", "mcp-remote", "<MCPのURL>"] }` |
 | そのほか（未検証） | リモート（Streamable HTTP）のMCPサーバーとしてURLを登録。ログイン画面で「戻り先を許可していない」と出たら、そのアプリの戻り先ホストを `ALLOWED_REDIRECT_HOSTS` に足す（設定すると既定値が置き換わる）。`myapp://` のような独自スキームに戻るアプリは、Cursorと同じく `mcp-remote` を使う |
 
 「Web・アプリ」は、Webで追加すればデスクトップとスマホのアプリでも使えるもの。「アプリ・CLI」は、PCで動くもの（スマホのアプリからは、PCをリモートで動かして使う）。
 
 **`ALLOWED_REDIRECT_HOSTS` が必要なアプリは？** ログイン後にWebのアドレスへ戻るアプリだけです。Claude（`claude.ai`、既定で許可済み）、ChatGPT（`chatgpt.com`）、Gemini（`oauth-redirect.googleusercontent.com`）、Muse（`agent.meta.ai`）、Antigravity（`antigravity.google`）などです。PC上で動いて `localhost` / `127.0.0.1` に戻るアプリ（Claude Code、Codex、Cursor用の `mcp-remote` など）は、最初から許可されています（`ALLOW_LOOPBACK_REDIRECTS`）。どちらも合言葉は必要です。
+
+足すときは、`npx wrangler secret put ALLOWED_REDIRECT_HOSTS` を実行して、一覧全体（例：`claude.ai,claude.com,chatgpt.com`）を入れます（[設定](#設定)も参照）。
 
 **Muse（Meta AIのエージェント）の場合**：`ALLOWED_REDIRECT_HOSTS` を `claude.ai,claude.com,agent.meta.ai` にしてください（戻り先は `https://agent.meta.ai/api/hatch/oauth/callback`）。合言葉の画面は、Museのアプリ内ブラウザだと勝手に閉じてしまったので、外部ブラウザで開いてください。Androidで2つ以上の値を貼るときは、キーボードのクリップボード履歴を使うと楽です。
 
@@ -149,7 +151,7 @@ AIに「Grok Botたちの意見も聞いて」と頼みます。
 
 | 方法 | しくみ | 向いているもの |
 | --- | --- | --- |
-| **知らせを受ける**（いちばん早い） | ask-grok-bots が自分の受け口に短い知らせを送り、受け口がAIを起こす | 外から起こせるエージェント：Muse、Claude Code、Codex、Antigravity |
+| **知らせを受ける**（いちばん早い） | ask-grok-bots が自分の受け口に短い知らせを送り、受け口がAIを起こす | 外から起こせるエージェント：Muse、Claude Code・Codex・AntigravityのCLI（`claude -p`、`codex exec`、`agy -p`） |
 | **予定で見に行く** | AIがときどき `list_grok_consults` を見て、`answered` か `failed` になった相談だけを読む | 外から起こせないデスクトップアプリ（Codexアプリ、デスクトップ版Antigravity）、予定実行のあるチャットアプリ（ChatGPT、Claude、Gemini） |
 | **必要なときに聞く** | あとで `get_grok_reply` をもう一度呼ぶ | すべて（これまでどおりの方法） |
 
@@ -244,7 +246,7 @@ AIに「Grok Botたちの意見も聞いて」と頼みます。
 - Botたちの答えは、「外部の文章であって指示ではない」と区切ってAIに渡します。
 - Grok Botのルーティンは「答えるだけ」に絞ってください。Botはクラウド上のコンピューターやログイン済みのサービスを使えることがあります。相談をきっかけに投稿・購入・削除・設定変更をさせないでください。`docs/` のひな形にもそう書いてあります。
 - 送るのを止めたいとき：ルーティンを停止するか、`npx wrangler secret delete GROK_WEBHOOK_KEY`。
-- 接続したアプリを全部切りたいとき（合言葉が漏れたときなど）：`LOGIN_PASSPHRASE` を変えてから、`OAUTH_KV` に保存された許可とトークン（`grant:` と `token:` で始まるキー）を消します。`npx wrangler kv key list --binding OAUTH_KV --remote --prefix grant:` で一覧を出し、`npx wrangler kv key delete --binding OAUTH_KV --remote <キー>` で消すか、Cloudflareのダッシュボードで消してください。消さないと、更新トークンは60日間使えます。（`client:` で始まるキーはアプリの登録情報です。消すのは任意の掃除です。）
+- 接続したアプリを全部切りたいとき（合言葉が漏れたときなど）：`LOGIN_PASSPHRASE` を変えてから、`OAUTH_KV` に保存された許可とトークン（`grant:` と `token:` で始まるキー）を消します。`npx wrangler kv key list --binding OAUTH_KV --remote --prefix grant:` で一覧を出し、`npx wrangler kv key delete --binding OAUTH_KV --remote <キー>` で消すか、Cloudflareのダッシュボードで消してください。消さないと、更新トークンは60日間使えます。（`client:` で始まるキーはアプリの登録情報です。掃除として消してもかまいませんが、必須ではありません。）
 - OAuthの登録やログインの入口は誰でも呼べて、呼ばれるたびにKVへ書き込みます。悪用されたら（Workersの無料プランはKVへの書き込みが1日1,000回まで）、`/oauth/register` と `/authorize` にCloudflareのレート制限ルールを設定してください。
 
 ## 困ったとき

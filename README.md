@@ -111,13 +111,15 @@ On first use, a page asks for the passphrase from step 4.
 | ChatGPT (web, apps) | Plugins page → "+" → "Add custom MCP server", enter the MCP URL and authenticate; pick it with `@` in a chat. Add `chatgpt.com` to `ALLOWED_REDIRECT_HOSTS` first |
 | Codex (apps, CLI) | In the app, ask Codex to add this MCP server and give it the MCP URL, then authenticate on the page that opens. In the CLI, `codex mcp add ask-grok-bots --url <MCP URL>`, then `codex mcp login ask-grok-bots` (both log in through `localhost`: no setting needed) |
 | Gemini (web, apps) | Customize → Connected apps → "+ Custom", enter the MCP URL and authenticate (leave client ID and secret empty). Add `oauth-redirect.googleusercontent.com` to `ALLOWED_REDIRECT_HOSTS` first |
-| Antigravity (apps, CLI) | Add `"ask-grok-bots": { "url": "<MCP URL>" }` to its MCP config and authenticate. Add `antigravity.google` to `ALLOWED_REDIRECT_HOSTS` first |
+| Antigravity (apps, CLI) | Add `"ask-grok-bots": { "url": "<MCP URL>" }` to its MCP config and authenticate. Add `antigravity.google` to `ALLOWED_REDIRECT_HOSTS` first. The CLI (`agy`) has its own connection: `agy mcp add ask-grok-bots <MCP URL>`, then authenticate it from `/mcp` in `agy` |
 | Cursor (not tested) | Cursor's own OAuth returns to `cursor://...`, which this server does not accept. Use `mcp-remote` instead (it logs in through `localhost`): `"ask-grok-bots": { "command": "npx", "args": ["-y", "mcp-remote", "<MCP URL>"] }` |
 | Others (not tested) | Add a remote (streamable HTTP) MCP server with the MCP URL. If the login page says the redirect target is not allowed, add the client's callback host to `ALLOWED_REDIRECT_HOSTS` (setting it replaces the default list). If the client uses a custom scheme such as `myapp://`, use `mcp-remote` as for Cursor |
 
 "web, apps": add it on the web and it also works in the desktop and mobile apps. "apps, CLI": runs on your computer (from a mobile app, through remote control of that computer).
 
 **Which apps need `ALLOWED_REDIRECT_HOSTS`?** Only apps whose login returns to a web address: Claude (`claude.ai`, in the default list), ChatGPT (`chatgpt.com`), Gemini (`oauth-redirect.googleusercontent.com`), Muse (`agent.meta.ai`), Antigravity (`antigravity.google`) and the like. Apps on your own computer that return to `localhost` / `127.0.0.1` (Claude Code, Codex, `mcp-remote` for Cursor...) are allowed by default (`ALLOW_LOOPBACK_REDIRECTS`), and still need the passphrase.
+
+To add a host: `npx wrangler secret put ALLOWED_REDIRECT_HOSTS` and enter the whole list, e.g. `claude.ai,claude.com,chatgpt.com` (see [Configuration](#configuration)).
 
 **Muse (Meta AI agents)**: set `ALLOWED_REDIRECT_HOSTS` to `claude.ai,claude.com,agent.meta.ai` (the callback is `https://agent.meta.ai/api/hatch/oauth/callback`). The passphrase page closed by itself in Muse's in-app browser; open it in an external browser. On Android, use your keyboard's clipboard history if you need to paste more than one value.
 
@@ -149,7 +151,7 @@ Asking is only half of the round trip. The bots often answer minutes later, when
 
 | Way | How | Good for |
 | --- | --- | --- |
-| **Get told** (fastest) | ask-grok-bots sends a short notice to your own webhook receiver, which wakes your AI | Agents that can be started from outside: Muse, Claude Code, Codex, Antigravity |
+| **Get told** (fastest) | ask-grok-bots sends a short notice to your own webhook receiver, which wakes your AI | Agents that can be started from outside: Muse, and the Claude Code, Codex and Antigravity CLIs (`claude -p`, `codex exec`, `agy -p`) |
 | **Check on a schedule** | Your AI calls `list_grok_consults` every so often and reads only the consultations that became `answered` or `failed` | Desktop apps that cannot be woken (Codex app, Antigravity app) and chat apps (ChatGPT, Claude, Gemini) with scheduled tasks |
 | **Ask when needed** | Call `get_grok_reply` again later | Everything; this is the default |
 

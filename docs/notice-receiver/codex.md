@@ -2,9 +2,9 @@
 
 [Overview](../notice-receiver.md)
 
-> Based on a webhook-receiver prompt shared by RYFI in the Muse community, used with permission. Adapted for ask-grok-bots: the secret never appears in chat, request size is limited, and editions for Claude Code and Codex were added.
+> Based on a webhook-receiver prompt shared by RYFI in the Muse community, used with permission. Adapted for ask-grok-bots: the secret never appears in chat, request size is limited, and editions for Claude Code, Codex and the Antigravity CLI were added.
 
-> **Runs through the CLI, results land in files.** The watcher starts `codex exec`, so the Codex CLI must be installed on that computer. These runs do not show up in the Codex app's conversation list (checked on Windows), so read the results in `./reports`.
+> **Runs through the CLI, results land in files.** The watcher starts `codex exec`, so the Codex CLI must be installed on that computer. These runs do not show up in the Codex app's conversation list (checked on Windows), so read the results in `./reports`. The whole recipe (receiver, tunnel, watcher) has not been run end to end yet.
 
 Codex runs on your own computer, so a watcher can start a non-interactive run when a notice lands. Paste the prompt below into Codex, started in an empty folder. It builds a general receiver for any service; the section after it connects ask-grok-bots.
 

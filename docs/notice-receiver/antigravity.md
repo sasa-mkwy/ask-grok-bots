@@ -4,7 +4,7 @@
 
 > Based on a webhook-receiver prompt shared by RYFI in the Muse community, used with permission. Adapted for ask-grok-bots and for the Antigravity CLI (`agy`).
 
-> **Runs through the CLI, results land in files.** The watcher starts `agy -p`, so the Antigravity CLI must be installed. The CLI keeps its conversations apart from the Antigravity app, so read the results in `./reports`. Tested with Antigravity CLI 1.5.11 on Windows: a headless run read the event file and fetched the answer with `get_grok_reply`.
+> **Runs through the CLI, results land in files.** The watcher starts `agy -p`, so the Antigravity CLI must be installed. The CLI keeps its conversations apart from the Antigravity app, so read the results in `./reports`. Tested with Antigravity CLI 1.5.11 on Windows: a headless run read the event file and fetched the answer with `get_grok_reply`. The receiver, tunnel and watcher parts have not been run end to end yet.
 
 The Antigravity CLI runs on your own computer, so a watcher can start a non-interactive run (`agy -p`) when a notice lands.
 
