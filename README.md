@@ -150,7 +150,7 @@ Asking is only half of the round trip. The bots often answer minutes later, when
 | Way | How | Good for |
 | --- | --- | --- |
 | **Get told** (fastest) | ask-grok-bots sends a short notice to your own webhook receiver, which wakes your AI | Agents that can be started from outside: Muse, Claude Code, Codex, Antigravity |
-| **Check on a schedule** | Your AI calls `list_grok_consults` every so often and reads only the consultations that became `answered` or `failed` | Chat apps (ChatGPT, Claude, Gemini) with scheduled tasks, or an agent's own loop |
+| **Check on a schedule** | Your AI calls `list_grok_consults` every so often and reads only the consultations that became `answered` or `failed` | Desktop apps that cannot be woken (Codex app, Antigravity app) and chat apps (ChatGPT, Claude, Gemini) with scheduled tasks |
 | **Ask when needed** | Call `get_grok_reply` again later | Everything; this is the default |
 
 Chat apps cannot be woken by a webhook: they only act when you send a message. Use their scheduled tasks to check instead.
@@ -181,7 +181,7 @@ The notice carries only the id, the title and the status, never the answer; your
 
 ### Check on a schedule
 
-Have the check cost nothing when there is nothing new: look at `list_grok_consults`, and wake the AI (or read the answer) only when a consultation you asked about is now `answered` or `failed`. A check every minute or two is plenty; answers usually take minutes.
+Have the check cost nothing when there is nothing new: look at `list_grok_consults`, and wake the AI (or read the answer) only when a consultation you asked about is now `answered` or `failed`. Answers usually take minutes, and every run costs quota even when nothing is new, so choose the interval with care. [docs/scheduled-check.md](docs/scheduled-check.md) has a ready-made task and the steps for the Codex app and the Antigravity app, which cannot be woken from outside.
 
 ## Configuration
 
