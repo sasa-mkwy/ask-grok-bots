@@ -16,7 +16,7 @@ import {
 } from "./store";
 
 const SUPPORTED_VERSIONS = ["2025-11-25", "2025-06-18", "2025-03-26"];
-const SERVER_INFO = { name: "ask-grok-bots", version: "0.2.0" };
+const SERVER_INFO = { name: "ask-grok-bots", version: "0.3.0" };
 
 export const MAX_QUESTION_CHARS = 8000;
 export const MAX_CONTEXT_CHARS = 12000;

@@ -1,6 +1,6 @@
 {
   "name": "ask-grok-bots",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "MCP server that lets AI assistants ask your Grok Bots for their opinions (Cloudflare Workers)",
   "license": "MIT",
   "engines": {
