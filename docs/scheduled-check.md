@@ -33,4 +33,4 @@ Tested on Windows: with a 1-minute schedule, each run called `list_grok_consults
 
 Do not use **Automations** for this: each automation run starts a new conversation (one per run), and an automation must be switched on by hand in the dashboard. Inside a conversation, the runs stay in that conversation.
 
-Tested on Windows: the check ran every minute inside one conversation, called `list_grok_consults`, and kept the list of reported ids in a small file in the project. It kept running while another conversation was open, but not while the app's window was closed: the runs resumed when it was opened again. Keep Antigravity open while you wait for answers.
+Tested on Windows: the check ran every minute inside one conversation, called `list_grok_consults`, and kept the list of reported ids in a small file in the project. It kept running while another conversation was open. After the app was quit and started again, the check did not resume, so keep Antigravity open while you wait for answers, and ask the inbox conversation to start the check again after a restart.
