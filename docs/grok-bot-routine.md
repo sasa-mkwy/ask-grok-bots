@@ -4,6 +4,17 @@
 
 Create a routine on the bot that receives consultations, with **"when a webhook fires"** as the trigger, and use the text below as its instructions. Replace `<GROUP>`, the bot list and `<YOUR SERVER>` (for example `https://ask-grok-bots.example.workers.dev`) with your own.
 
+## How to ask your bot
+
+You can ask the bot that receives consultations to create the routine in a chat with it. Ask for a routine that wakes only when a consultation arrives, not one that checks on a timer: it then does nothing, and costs nothing, while there is nothing to answer.
+
+```text
+Create a routine that runs when a webhook fires, so you can receive consultations from ask-grok-bots. Do not check on a timer; wake only when a consultation is sent. Use the instructions I paste next exactly as written.
+When it is ready, tell me the webhook URL and where I can see its key (the value for the Authorization header). Do not write the key itself in the chat or in notes.
+```
+
+Then paste the instructions below, with the settings filled in. Do not paste the URL or the key into the chat: copy them from the bot's screen into ask-grok-bots as `GROK_WEBHOOK_URL` and `GROK_WEBHOOK_KEY`.
+
 Grok Bot routines change over time, so check what your routine can actually do. In one setup, the helper that runs a webhook routine could not message other bots. The working pattern there was:
 
 1. The webhook helper saves the consultation (including `reply.url` and `reply.token`) into a folder for that `consultation_id`, readable only by the bot, reports only the folder's location, and ends.

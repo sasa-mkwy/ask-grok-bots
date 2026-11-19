@@ -69,7 +69,7 @@ Run this again before deploying whenever a new migration is added.
 ### 3. Create the Grok Bot routine
 
 Create a routine triggered by a webhook on the bot that will receive consultations.
-Use [docs/grok-bot-routine.md](docs/grok-bot-routine.md) as the routine's instructions. **You decide who gets asked** in those instructions: by default you list your bots and what each is good at, and the receiving bot picks the best fit for each consultation (or you can always ask the same bots). A single bot with no one else to ask works too: it answers alone.
+Use [docs/grok-bot-routine.md](docs/grok-bot-routine.md) as the routine's instructions (it also shows how to ask your bot to create it). **You decide who gets asked** in those instructions: by default you list your bots and what each is good at, and the receiving bot picks the best fit for each consultation (or you can always ask the same bots). A single bot with no one else to ask works too: it answers alone.
 Note the **webhook URL** and **key** it gives you.
 
 ### 4. Set the secrets

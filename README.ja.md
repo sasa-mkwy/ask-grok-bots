@@ -69,7 +69,7 @@ npx wrangler d1 migrations apply ask-grok-bots --remote
 ### 3. Grok Botのルーティンを作る
 
 相談を受け付けるBotで、Webhookで起動するルーティンを作ります。
-指示文には [docs/grok-bot-routine.ja.md](docs/grok-bot-routine.ja.md) を使ってください。**誰に相談するかは、持ち主がこの指示文で決めます。** ひな形では、Botの一覧と得意なことを書いておき、受付役のBotが相談ごとに合うBotを選びます（毎回同じBotに聞く書き方もできます）。ほかに聞く相手がいない、Bot1体だけの環境でも使えます。そのときは受付役が1体で答えます。
+指示文には [docs/grok-bot-routine.ja.md](docs/grok-bot-routine.ja.md) を使ってください（Botへの頼み方も書いてあります）。**誰に相談するかは、持ち主がこの指示文で決めます。** ひな形では、Botの一覧と得意なことを書いておき、受付役のBotが相談ごとに合うBotを選びます（毎回同じBotに聞く書き方もできます）。ほかに聞く相手がいない、Bot1体だけの環境でも使えます。そのときは受付役が1体で答えます。
 作ると出てくる **Webhook URL** と **キー** を控えます。
 
 ### 4. 秘密の値を登録する
