@@ -50,6 +50,8 @@ npm install
 npx wrangler login
 ```
 
+**If you use the cf CLI:** this repository still runs on its Wrangler configuration. Wrangler comes with `npm install`, so use the `npx wrangler …` steps as written. Do not run `cf dev`, `cf build` or `cf deploy` in this folder: cf does not read `wrangler.jsonc`, so they fail or may rewrite the project's settings.
+
 ### 2. Create the storage
 
 ```bash

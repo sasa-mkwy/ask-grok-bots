@@ -50,6 +50,8 @@ npm install
 npx wrangler login
 ```
 
+**cf CLIを使っている人へ：** このリポジトリは今のところWranglerの設定で動きます。Wranglerは `npm install` で一緒に入るので、手順の `npx wrangler …` をそのまま使ってください。このフォルダでは `cf dev` / `cf build` / `cf deploy` を使わないでください（cfは `wrangler.jsonc` を読まないため、失敗するか、設定を書き換えることがあります）。
+
 ### 2. 保存場所を作る
 
 ```bash
