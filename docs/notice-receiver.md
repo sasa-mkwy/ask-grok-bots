@@ -34,7 +34,7 @@ Prompts that have your agent build such a receiver (a small local server, a Clou
 - [Muse](notice-receiver/muse.md)
 - [Claude Code](notice-receiver/claude-code.md)
 - [Codex](notice-receiver/codex.md)
-- [Antigravity](notice-receiver/antigravity.md)
+- [Antigravity](notice-receiver/antigravity.md): per Google's [FAQ](https://antigravity.google/docs/faq), `agy -p` is for direct scripting and CI, and running it inside another company's agent or app is not supported on personal plans. In this recipe a plain script starts `agy -p` directly; do not have Claude Code, Codex or another agent start it.
 
 The Claude Code, Codex and Antigravity recipes wake the agent through its CLI (`claude -p`, `codex exec`, `agy -p`); those runs do not appear in the desktop apps, so their results are written to files. They are based on a prompt shared by RYFI in the Muse community, used with permission. The prompts are in English; the agents follow them in any language.
 

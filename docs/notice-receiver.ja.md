@@ -34,7 +34,7 @@ X-Webhook-Secret: <REPLY_NOTIFY_SECRET>
 - [Muse](notice-receiver/muse.md)（英語）
 - [Claude Code](notice-receiver/claude-code.md)（英語）
 - [Codex](notice-receiver/codex.md)（英語）
-- [Antigravity](notice-receiver/antigravity.md)（英語）
+- [Antigravity](notice-receiver/antigravity.md)（英語）：Googleの[FAQ](https://antigravity.google/docs/faq)では、`agy -p` はスクリプトやCIから直接使うためのもので、個人向けプランでは他社のエージェントやアプリの中で使うことはサポートされていません。このレシピでは、ふつうのスクリプトが `agy -p` を直接起動します。Claude CodeやCodexなどから `agy -p` を起動させないでください。
 
 Claude Code・Codex・Antigravity版は、CLI（`claude -p`、`codex exec`、`agy -p`）でエージェントを起こします。この実行はデスクトップアプリの会話一覧には出ないので、結果はファイルに残します。Museコミュニティで RYFI さんが共有したプロンプトを元に、許可をもらって手直ししたものです。プロンプトは英語ですが、日本語で話しているエージェントにもそのまま渡せます。
 

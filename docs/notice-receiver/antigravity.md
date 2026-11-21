@@ -8,6 +8,8 @@
 
 The Antigravity CLI runs on your own computer, so a watcher can start a non-interactive run (`agy -p`) when a notice lands.
 
+> **Google's terms on headless runs.** The [Antigravity FAQ](https://antigravity.google/docs/faq) says headless mode (`agy -p`) is meant for direct scripting and CI, and that wrapping `agy` inside a third-party coding agent or application is not supported on personal plans. In this recipe the watcher is a plain script that starts `agy -p` itself, which is direct scripting. Keep it that way: do not have Claude Code, Codex or another agent start `agy -p`. Check the FAQ for changes before you set this up.
+
 One difference from the other recipes: in `agy -p`, a tool that needs permission is denied instead of asked, and pre-approval rules (`permissions.allow`) have been reported to work for MCP tools but not for shell commands or writes. Files inside the project folder can be read without a rule, and in 1.5.11 the MCP call also went through without one; the prompt still allows the ask-grok-bots tools explicitly, for other versions. So here the watcher script does all file handling, and the agent only reads and calls `get_grok_reply`. Nothing it runs can write or execute anything, which is also the safer setup.
 
 Paste the prompt below into Antigravity (the CLI or the app), started in an empty folder. Antigravity builds the receiver; afterwards the section below connects ask-grok-bots.
